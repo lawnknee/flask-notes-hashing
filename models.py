@@ -61,4 +61,22 @@ class User(db.Model):
                    first_name=first_name, 
                    last_name=last_name)
         
+class Note(db.Model):
+    """Flask Notes Note."""
+    
+    __tablename__ = "notes"
+    
+    id = db.Column(db.Integer,
+                   primary_key=True,
+                   unique=True,
+                   autoincrement=True)
+    
+    title = db.Column(db.String(100),
+                      nullable=False)
         
+    content = db.Column(db.Text,
+                      nullable=False)
+    
+    owner = db.Column(db.String(20),
+                      db.ForeignKey('users.username'),
+                      nullable=False) # primary_key=True 

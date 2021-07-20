@@ -16,8 +16,15 @@
     {%  endfor %}
 
     {% if "username" in session %}
-    <form><button formaction="/logout" formmethod="POST" type="submit">Logout</button></form> 
-    <li><a href="/secrets">Secret</a></li>
+      <form>
+        <button 
+          class="btn btn-secondary"
+          formaction="/logout" 
+          formmethod="POST" 
+          type="submit">
+          Logout
+        </button>
+      </form> 
     {% endif %}
 
 

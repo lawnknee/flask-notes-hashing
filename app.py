@@ -1,5 +1,5 @@
 from flask import Flask, redirect, render_template, request, session, flash
-from models import db, connect_db, User
+from models import db, connect_db, User, Note
 from forms import RegisterForm, LoginForm
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -80,6 +80,7 @@ def handle_login_form():
     else:
         return render_template("login.html", form=form)
     
+    
 @app.route('/users/<username>')
 def user_homepage(username):
     
@@ -89,10 +90,10 @@ def user_homepage(username):
 
     elif username == session["username"]:
         user = User.query.get(username)
-        return render_template("user_homepage.html" , user=user )
-
-
-    
+        notes = Note.query.filter_by(owner=username)
+        return render_template("user_homepage.html", 
+                               user=user, 
+                               notes=notes )
     
 
 @app.route('/logout', methods=["POST"] )
