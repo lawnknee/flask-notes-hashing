@@ -16,7 +16,9 @@
             {% for note in notes %}
             <form action="/notes/{{ note.id }}/delete" method="POST">    
                 <li><a href="/notes/{{ note.id }}/update"> {{ note.title }} </a></li>
+
                 <button type="submit" class="btn btn-danger">Delete Note</button>
+                
             </form> 
             {% endfor %}
         </ul>
