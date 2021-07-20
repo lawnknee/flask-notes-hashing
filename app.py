@@ -1,7 +1,6 @@
 from flask import Flask, redirect, render_template, request, session
-# from flask_bcrypt import Bcrypt
 from models import db, connect_db, User
-from forms import RegisterForm
+from forms import RegisterForm, LoginForm
 from flask_debugtoolbar import DebugToolbarExtension
 
 
@@ -25,7 +24,7 @@ def redirect_register():
 
 
 @app.route("/register",  methods=["GET", "POST"])
-def show_register_form():
+def handle_register_form():
     """ Displays register form with fields:
     username, password, email, first_name, and last_name. 
     Registers user after submit.
@@ -39,43 +38,49 @@ def show_register_form():
         email = form.email.data
         first_name = form.first_name.data
         last_name = form.last_name.data
-
-        new_user = User(username=username, 
-                        password=password, 
-                        email=email, 
-                        first_name=first_name, 
-                        last_name=last_name)
+        
+        # new_user = User(username=username, 
+        #                 password=password, 
+        #                 email=email, 
+        #                 first_name=first_name, 
+        #                 last_name=last_name)
+        
+        new_user = User.register(username, 
+                                 password, 
+                                 email, 
+                                 first_name, 
+                                 last_name)
 
         db.session.add(new_user)
         db.session.commit()
-
-        return redirect("/secret")
-
+        
+        return redirect("/secrets")
+    
     else:
-        return render_template("register_user.html", form=form)
+        return render_template("register.html", form=form)
 
 
 @app.route("/login",  methods=["GET", "POST"])
-def show_login_form():
+def handle_login_form():
 
-    form = RegisterForm()
+    form = LoginForm()
 
     if form.validate_on_submit():
-
         username = form.username.data
         password = form.password.data
         
-        current_user = User.query.get( username ).one_or_none()
+        current_user = User.authenticate(username, password)
 
-    # User.athenticate(username, password)
-
-        if current_user.password == password:
-
+        if current_user:
             session["username"] = current_user.username
             return redirect("/secrets")
-        
         else:
             form.username.errors = ["Bad name/password"]
-
+            
     else:
         return render_template("login.html", form=form)
+    
+@app.route('/secrets')
+def secret():
+    
+    return "<html><body><b>You made it!</b></body></html>"

@@ -24,7 +24,7 @@ class RegisterForm(FlaskForm):
                              validators=[InputRequired(), Length(max=30)])
 
 
-class LoginrForm(FlaskForm):
+class LoginForm(FlaskForm):
     """User Login Form."""
 
     username = StringField("Username",
