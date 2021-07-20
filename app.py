@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template, request, session
+from flask import Flask, redirect, render_template, request, session, flash
 from models import db, connect_db, User
 from forms import RegisterForm, LoginForm
 from flask_debugtoolbar import DebugToolbarExtension
@@ -54,7 +54,7 @@ def handle_register_form():
         db.session.add(new_user)
         db.session.commit()
         
-        return redirect("/secrets")
+        return redirect("/login")
     
     else:
         return render_template("register.html", form=form)
@@ -73,14 +73,31 @@ def handle_login_form():
 
         if current_user:
             session["username"] = current_user.username
-            return redirect("/secrets")
+            return redirect(f"/users/{username}")
         else:
             form.username.errors = ["Bad name/password"]
             
     else:
         return render_template("login.html", form=form)
     
-@app.route('/secrets')
-def secret():
+@app.route('/users/<username>')
+def user_homepage(username):
     
-    return "<html><body><b>You made it!</b></body></html>"
+    if "username" not in session or session["username"] !=username:
+        flash("You dont belong here ...  yet")
+        return redirect("/")
+
+    elif username == session["username"]:
+        user = User.query.get(username)
+        return render_template("user_homepage.html" , user=user )
+
+
+    
+    
+
+@app.route('/logout', methods=["POST"] )
+def logout():
+    """ Log users out and redirects to homepage"""
+    session.pop( "username" , None)
+
+    return redirect("/")
