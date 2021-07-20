@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %} Create New User {% endblock %}
+{% block title %} Edit note {% endblock %}
 
 {% block content %}
-  <h1>Create New User</h1>
+  <h1>Edit Note</h1>
   
-  <form action="/register" method="POST">
+  <form action="/notes/{{note_id}}/update" method="POST">
     {{ form.hidden_tag() }}
 
     {% for field in form if field.widget.input_type != 'hidden' %}
@@ -25,7 +25,7 @@
 
     {% endfor %}
     
-    <button type="submit" class="btn btn-primary mt-3">Create User</button>
+    <button type="submit" class="btn btn-primary mt-3">Edit note</button>
   </form>
-    <a href= "/login" class="btn btn-primary mt-3"> Login </a>
+    <a href= "/users/{{username}}" class="btn btn-primary mt-3"> Back </a>
 {% endblock %}

@@ -1,6 +1,6 @@
 from flask import Flask, redirect, render_template, request, session, flash
 from models import db, connect_db, User, Note
-from forms import RegisterForm, LoginForm
+from forms import RegisterForm, LoginForm, NotesAddForm, NotesEditForm
 from flask_debugtoolbar import DebugToolbarExtension
 
 
@@ -102,3 +102,77 @@ def logout():
     session.pop( "username" , None)
 
     return redirect("/")
+
+
+@app.route('/users/<username>/delete', methods=["POST"] )
+def destroy_user(username):
+    """Deletes user & notes from database and redirects to register form"""
+
+    user = User.query.get_or_404(username)
+    notes = Note.query.filter_by(owner=username)
+
+    #  check later after we havd notes
+    # db.session.delete(notes)
+    db.session.delete(user)
+    db.session.commit()
+
+    session.pop( "username" , None)
+
+    return redirect("/")
+
+
+
+
+
+########################### NOTES ###########################################################
+
+@app.route('/users/<username>/notes/add', methods=["GET", "POST"] )
+def notes_add_form(username):
+    """Renders add notes form and submits notes"""
+
+    form = NotesAddForm()
+
+    if form.validate_on_submit():
+        data = { k:v for k,v in form.data.items() if k != "csrf_token" }
+
+        new_note = Note(**data, owner=username)
+
+        db.session.add(new_note)
+        db.session.commit()
+
+        return redirect(f"/users/{username}")
+
+    else:
+        return render_template("new_note.html" , form=form, username=username)
+
+
+@app.route('/notes/<note_id>/update', methods=["GET", "POST"] )
+def notes_edit_form(note_id):
+    """Renders add notes form and submits notes"""
+
+    
+    note = Note.query.get(note_id)
+    form = NotesAddForm(obj=note)
+    
+    if form.validate_on_submit():
+        note.title = form.title.data
+        note.content = form.content.data
+
+        db.session.commit()
+
+        return redirect(f"/users/{note.owner}")
+
+    else:
+        return render_template("edit_note.html" , form=form, note_id=note_id, username=note.owner )
+
+@app.route("/notes/<note_id>/delete", methods=["POST"] ) 
+def delete_note(note_id):
+    """Deletes note"""
+
+    note = Note.query.get_or_404(note_id)
+    username = note.owner
+    
+    db.session.delete(note)
+    db.session.commit()
+
+    return redirect(f"/users/{username}")

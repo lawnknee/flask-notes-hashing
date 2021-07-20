@@ -15,7 +15,7 @@
         <ul>
             {% for note in notes %}
             <form action="/notes/{{ note.id }}/delete" method="POST">    
-                <li><a href="/notes/{{ note.id }}/update"></a> {{ note.title }} </li>
+                <li><a href="/notes/{{ note.id }}/update"> {{ note.title }} </a></li>
                 <button type="submit" class="btn btn-danger">Delete Note</button>
             </form> 
             {% endfor %}
@@ -24,8 +24,8 @@
         <a href="/users/{{user.username}}/notes/add" class="btn btn-primary">Add a new note</a>
 
     <h3>Delete</h3>
-        <form action="/users/<username>/delete" method="POST">
-            <button class="btn btn-danger">Delete user</button>
+        <form action="/users/{{user.username}}/delete" method="POST">
+            <button class="btn btn-danger" type = "submit">Delete user</button>
         </form>
 
 {% endblock %}

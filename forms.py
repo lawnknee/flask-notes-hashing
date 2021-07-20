@@ -32,3 +32,22 @@ class LoginForm(FlaskForm):
 
     password = PasswordField("Password",
                            validators=[InputRequired()])
+
+
+class NotesAddForm(FlaskForm):
+    """Create new notes for user."""
+
+    title = StringField("Title",
+                        validators=[InputRequired(), Length(max=100)])
+
+    content = StringField("Content",
+                        validators=[InputRequired()])
+
+class NotesEditForm(FlaskForm):
+    """Edits an existing note for a user."""
+
+    title = StringField("Title",
+                        validators=[InputRequired(), Length(max=100)])
+
+    content = StringField("Content",
+                        validators=[InputRequired()])
