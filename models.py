@@ -35,6 +35,9 @@ class User(db.Model):
     last_name = db.Column(db.String(30),
                           nullable=False)
     
+    # is_admin = db.Column(db.Boolean,
+    #                      default=False)
+    
     @classmethod
     def authenticate(cls, username, password):
         """Validate that user exists and password is correct.
@@ -79,4 +82,6 @@ class Note(db.Model):
     
     owner = db.Column(db.String(20),
                       db.ForeignKey('users.username'),
-                      nullable=False) # primary_key=True 
+                      nullable=False) 
+    
+    user = db.relationship("User", backref="notes")

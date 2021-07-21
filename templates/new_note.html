@@ -7,7 +7,9 @@
   
   <form action="/users/{{username}}/notes/add" method="POST">
     {% include "_form.html"%}
+
     <button type="submit" class="btn btn-primary mt-3">Create note</button>
   </form>
-    <a href= "/users/{{username}}" class="btn btn-primary mt-3"> Back </a>
+  
+  <a href= "/users/{{username}}" class="btn btn-primary mt-3"> Back </a>
 {% endblock %}

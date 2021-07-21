@@ -1,15 +1,14 @@
-from flask import Flask, redirect, render_template, request, session, flash
+from flask import Flask, redirect, render_template, session
 from models import db, connect_db, User, Note
-from forms import RegisterForm, LoginForm, NotesAddForm, NotesEditForm
+from forms import RegisterForm, LoginForm, NoteForm
 from flask_debugtoolbar import DebugToolbarExtension
-
+from werkzeug.exceptions import Unauthorized
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///flask_notes'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
-# move this out later
 app.config['SECRET_KEY'] = "SECRET!"
 debug = DebugToolbarExtension(app)
 
@@ -29,6 +28,9 @@ def handle_register_form():
     username, password, email, first_name, and last_name. 
     Registers user after submit.
     """
+    
+    if "username" in session:
+        return redirect(f'/users/{session["username"]}')
 
     form = RegisterForm()
 
@@ -39,12 +41,6 @@ def handle_register_form():
         first_name = form.first_name.data
         last_name = form.last_name.data
         
-        # new_user = User(username=username, 
-        #                 password=password, 
-        #                 email=email, 
-        #                 first_name=first_name, 
-        #                 last_name=last_name)
-        
         new_user = User.register(username, 
                                  password, 
                                  email, 
@@ -53,15 +49,19 @@ def handle_register_form():
 
         db.session.add(new_user)
         db.session.commit()
+        session["username"] = new_user.username
         
-        return redirect("/login")
-    
+        return redirect(f"/users/{username}")
     else:
         return render_template("register.html", form=form)
 
 
 @app.route("/login",  methods=["GET", "POST"])
 def handle_login_form():
+    """Displays login form and handles user authentication."""
+    
+    if "username" in session:
+        return redirect(f'/users/{session["username"]}')
 
     form = LoginForm()
 
@@ -76,6 +76,7 @@ def handle_login_form():
             return redirect(f"/users/{username}")
         else:
             form.username.errors = ["Bad name/password"]
+            return render_template('login.html', form=form)
             
     else:
         return render_template("login.html", form=form)
@@ -83,14 +84,16 @@ def handle_login_form():
     
 @app.route('/users/<username>')
 def user_homepage(username):
+    """Displays current user's details and notes."""
     
-    if "username" not in session or session["username"] !=username:
-        flash("You dont belong here ...  yet")
-        return redirect("/")
+    if "username" not in session or session["username"] != username:
+        raise Unauthorized()
+    # can turn into helper function?
 
     elif username == session["username"]:
-        user = User.query.get(username)
-        notes = Note.query.filter_by(owner=username)
+        user = User.query.get_or_404(username)
+        # notes = Note.query.filter_by(owner=username)
+        notes = user.notes
         return render_template("user_homepage.html", 
                                user=user, 
                                notes=notes )
@@ -98,7 +101,8 @@ def user_homepage(username):
 
 @app.route('/logout', methods=["POST"] )
 def logout():
-    """ Log users out and redirects to homepage"""
+    """Logs current userout and redirects to homepage."""
+    
     session.pop( "username" , None)
 
     return redirect("/")
@@ -109,32 +113,28 @@ def destroy_user(username):
     """Deletes user & notes from database and redirects to register form"""
 
     user = User.query.get_or_404(username)
-    notes = Note.query.filter_by(owner=username)
+    
+    Note.query.filter_by(owner=username).delete()
 
-    #  check later after we havd notes
-    # db.session.delete(notes)
     db.session.delete(user)
     db.session.commit()
 
-    session.pop( "username" , None)
+    session.pop("username" , None)
 
     return redirect("/")
 
 
+########################### NOTES ##################################
 
-
-
-########################### NOTES ###########################################################
 
 @app.route('/users/<username>/notes/add', methods=["GET", "POST"] )
 def notes_add_form(username):
-    """Renders add notes form and submits notes"""
+    """Renders add note form and submits note."""
 
-    form = NotesAddForm()
+    form = NoteForm()
 
     if form.validate_on_submit():
         data = { k:v for k,v in form.data.items() if k != "csrf_token" }
-
         new_note = Note(**data, owner=username)
 
         db.session.add(new_note)
@@ -148,11 +148,10 @@ def notes_add_form(username):
 
 @app.route('/notes/<note_id>/update', methods=["GET", "POST"] )
 def notes_edit_form(note_id):
-    """Renders add notes form and submits notes"""
-
+    """Renders edit note form and submits editted note."""
     
-    note = Note.query.get(note_id)
-    form = NotesAddForm(obj=note)
+    note = Note.query.get_or_404(note_id)
+    form = NoteForm(obj=note)
     
     if form.validate_on_submit():
         note.title = form.title.data
@@ -167,7 +166,7 @@ def notes_edit_form(note_id):
 
 @app.route("/notes/<note_id>/delete", methods=["POST"] ) 
 def delete_note(note_id):
-    """Deletes note"""
+    """Deletes current note."""
 
     note = Note.query.get_or_404(note_id)
     username = note.owner

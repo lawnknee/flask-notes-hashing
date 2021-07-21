@@ -12,10 +12,11 @@
 
     {% for message in get_flashed_messages() %}
        <p> {{message}} </p>
-    
     {%  endfor %}
 
     {% if "username" in session %}
+      <div class="btn btn-dark mb-3">Welcome {{ session.username }} !</div>
+
       <form>
         <button 
           class="btn btn-secondary"
@@ -24,7 +25,7 @@
           type="submit">
           Logout
         </button>
-      </form> 
+      </form>
     {% endif %}
 
 

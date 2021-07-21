@@ -4,28 +4,31 @@
 
 {% block content %}
     <h3>User details:</h3>
-    <ul style= "list-style-type:none;">
-        <li>Username: {{user.username}}</li>
-        <li>Email: {{user.email}}</li>
-        <li>First Name: {{user.first_name}}</li>
-        <li>Last Name: {{user.last_name}}</li>
-    </ul>
+
+        <ul style= "list-style-type:none;">
+            <li>Username: {{user.username}}</li>
+            <li>Email: {{user.email}}</li>
+            <li>First Name: {{user.first_name}}</li>
+            <li>Last Name: {{user.last_name}}</li>
+        </ul>
 
     <h3>Notes</h3>
+    
         <ul>
             {% for note in notes %}
-            <form action="/notes/{{ note.id }}/delete" method="POST">    
-                <li><a href="/notes/{{ note.id }}/update"> {{ note.title }} </a></li>
+                <form action="/notes/{{ note.id }}/delete" method="POST">    
+                    <li><a href="/notes/{{ note.id }}/update"> {{ note.title }} </a></li>
 
-                <button type="submit" class="btn btn-danger">Delete Note</button>
-                
-            </form> 
+                    <button type="submit" class="btn btn-danger">Delete Note</button>
+                    
+                </form> 
             {% endfor %}
         </ul>
 
         <a href="/users/{{user.username}}/notes/add" class="btn btn-primary">Add a new note</a>
 
     <h3>Delete</h3>
+
         <form action="/users/{{user.username}}/delete" method="POST">
             <button class="btn btn-danger" type = "submit">Delete user</button>
         </form>
